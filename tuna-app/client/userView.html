@@ -1,0 +1,46 @@
+
+  <div class="assets">
+    <header>
+      <div id="left_header">Auctioning Application</div>
+    </header>
+
+    <div id="body">
+      <div class="form-group">
+        <label>User Assets</label>
+        <select>
+          <option ng-repeat="tuna in all_tuna">{{ tuna }}</option>
+          <!-- <option value="saab">Saab</option>
+          <option value="mercedes">Mercedes</option>
+          <option value="audi">Audi</option> -->
+        </select>
+        <!-- <button type="button" ng-click="queryAllTuna()">Add new asset</button> -->
+      </div>
+      <div class="form-group">
+        <label>Create Tuna Record</label>
+        <!-- <h5 style="color:green;margin-bottom:2%" id="success_create">Success! Tx ID: {{create_tuna}}</h5> -->
+        <br>
+          Enter assets id: <input class="form-control"  id="id" type="text" placeholder="Ex: 11" ng-model="tuna.id">
+          Enter name of vehicle: <input class="form-control" id="name" type="text" placeholder="Ex: 0239L" ng-model="tuna.vessel">
+          Enter name of holder: <input class="form-control" id="holder" type="text" placeholder="Ex: Hansel" ng-model="tuna.holder">
+          Type Of Vehicle : <input class="form-control" id="vehicle" type="text" placeholder="Ex: 0239L" ng-model="tuna.location">
+          Price: <input class="form-control" type="text" id="price" placeholder="Ex: 0239L" ng-model="tuna.timestamp">
+
+          <input id="createSubmit" type="submit" value="Create new asset" class="btn btn-primary" ng-click="recordTuna()">
+      </div>
+
+      <div class="form-group">
+        <label>Add to Auction Pool</label><br>
+        <center><button type="button" ng-click="addToAuctionPool()">Add asset to auction pool</button></center>
+      </div>
+
+      <textarea id="transcriptID" rows="10" cols="50" readonly="readonly"></textarea>
+
+      <div class="form-group">
+        <label>Auctioining Bulltein Board</label>
+          <div>This is a sample bulleting board</div>
+      </div>
+
+    <textarea id="transcriptID" rows="10" cols="50" readonly="readonly"></textarea>
+
+    </div>
+  </div>
