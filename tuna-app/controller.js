@@ -50,7 +50,7 @@ return{
 		    fabric_client.setCryptoSuite(crypto_suite);
 
 		    // get the enrolled user from persistence, this user will sign all requests
-		    return fabric_client.getUserContext('user1', true);
+		    return fabric_client.getUserContext(loggedUser, true);
 		}).then((user_from_store) => {
 		    if (user_from_store && user_from_store.isEnrolled()) {
 		        console.log('Successfully loaded user1 from persistence');
@@ -107,6 +107,7 @@ return{
 
 			var member_user = null;
 			var store_path = path.join(os.homedir(), '.hfc-key-store');
+			var tx_id = null;
 			console.log('Store path:'+store_path);
 
 			// create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
@@ -132,7 +133,29 @@ return{
 							registerUser(user);
 			    }
 
-			}).catch((err) => {
+			const request = {
+		        chaincodeId: 'tuna-app',
+		        txId: tx_id,
+		        fcn: 'queryAllTuna',
+		        args: ['']
+		    };
+
+		    // send the query proposal to the peer
+		    return channel.queryByChaincode(request);
+		}).then((query_responses) => {
+		    console.log("Query has completed, checking results");
+		    // query_responses could have more than one  results if there multiple peers were used as targets
+		    if (query_responses && query_responses.length == 1) {
+		        if (query_responses[0] instanceof Error) {
+		            console.error("error from query = ", query_responses[0]);
+		        } else {
+		            console.log("Response is ", query_responses[0].toString());
+		            res.json(JSON.parse(query_responses[0].toString()));
+		        }
+		    } else {
+		        console.log("No payloads were returned from query");
+		    }
+		}).catch((err) => {
 			    console.error('Failed to invoke successfully :: ' + err);
 			});
 		},
@@ -184,7 +207,7 @@ return{
 		    fabric_client.setCryptoSuite(crypto_suite);
 
 		    // get the enrolled user from persistence, this user will sign all requests
-		    return fabric_client.getUserContext('user1', true);
+		    return fabric_client.getUserContext(loggedUser, true);
 		}).then((user_from_store) => {
 		    if (user_from_store && user_from_store.isEnrolled()) {
 		        console.log('Successfully loaded user1 from persistence');
@@ -197,6 +220,11 @@ return{
 		    tx_id = fabric_client.newTransactionID();
 		    console.log("Assigning transaction_id: ", tx_id._transaction_id);
 
+		    console.log("key:", key);
+		    console.log("vessel:", vessel);
+		    console.log("location:", location);
+		    console.log("timestamp:", timestamp);
+		    console.log("holder:", holder);
 		    // recordTuna - requires 5 args, ID, vessel, location, timestamp,holder - ex: args: ['10', 'Hound', '-12.021, 28.012', '1504054225', 'Hansel'],
 		    // send proposal to endorser
 		    const request = {
@@ -207,9 +235,13 @@ return{
 		        chainId: 'mychannel',
 		        txId: tx_id
 		    };
-
-		    // send the transaction proposal to the peers
-		    return channel.sendTransactionProposal(request);
+		    console.log("loggedUser:",loggedUser)
+		    if(holder === loggedUser) {
+			    // send the transaction proposal to the peers
+			    return channel.sendTransactionProposal(request);
+		   	} else {
+		   		res.send("Invalid Holder");
+		   	}
 		}).then((results) => {
 		    var proposalResponses = results[0];
 		    var proposal = results[1];
@@ -332,7 +364,7 @@ return{
 		    fabric_client.setCryptoSuite(crypto_suite);
 
 		    // get the enrolled user from persistence, this user will sign all requests
-		    return fabric_client.getUserContext('user1', true);
+		    return fabric_client.getUserContext(loggedUser, true);
 		}).then((user_from_store) => {
 		    if (user_from_store && user_from_store.isEnrolled()) {
 		        console.log('Successfully loaded user1 from persistence');
@@ -360,7 +392,10 @@ return{
 		            res.send("Could not locate tuna")
 
 		        } else {
-		            console.log("Response is ", query_responses[0].toString());
+		        	console.log("Response json ", query_responses[0]);
+					//res.json(JSON.parse(query_responses[0].toString()));
+
+		            console.log("Response is ", JSON.parse(query_responses[0].toString()).holder);
 		            res.send(query_responses[0].toString())
 		        }
 		    } else {
@@ -406,7 +441,7 @@ return{
 		    fabric_client.setCryptoSuite(crypto_suite);
 
 		    // get the enrolled user from persistence, this user will sign all requests
-		    return fabric_client.getUserContext('user1', true);
+		    return fabric_client.getUserContext(loggedUser, true);
 		}).then((user_from_store) => {
 		    if (user_from_store && user_from_store.isEnrolled()) {
 		        console.log('Successfully loaded user1 from persistence');
@@ -415,23 +450,38 @@ return{
 		        throw new Error('Failed to get user1.... run registerUser.js');
 		    }
 
+
+		    const request = {
+		        chaincodeId: 'tuna-app',
+		        txId: tx_id,
+		        fcn: 'queryTuna',
+		        args: [key]
+		    };
+
+		    // send the query proposal to the peer
+		    return channel.queryByChaincode(request);
+		    }).then((query_responses) => {
+		    	console.log("Query has completed, checking results");
+		    
 		    // get a transaction id object based on the current user assigned to fabric client
 		    tx_id = fabric_client.newTransactionID();
 		    console.log("Assigning transaction_id: ", tx_id._transaction_id);
 
 		    // changeTunaHolder - requires 2 args , ex: args: ['1', 'Barry'],
 		    // send proposal to endorser
-		    var request = {
-		        //targets : --- letting this default to the peers assigned to the channel
-		        chaincodeId: 'tuna-app',
-		        fcn: 'changeTunaHolder',
-		        args: [key, holder],
-		        chainId: 'mychannel',
-		        txId: tx_id
-		    };
+		    if(JSON.parse(query_responses[0].toString()).holder === loggedUser) {
+			    var request = {
+			        //targets : --- letting this default to the peers assigned to the channel
+			        chaincodeId: 'tuna-app',
+			        fcn: 'changeTunaHolder',
+			        args: [key, holder],
+			        chainId: 'mychannel',
+			        txId: tx_id
+			    };
 
-		    // send the transaction proposal to the peers
-		    return channel.sendTransactionProposal(request);
+			    // send the transaction proposal to the peers
+			    return channel.sendTransactionProposal(request);
+			}
 		}).then((results) => {
 		    var proposalResponses = results[0];
 		    var proposal = results[1];
@@ -503,7 +553,7 @@ return{
 		        return Promise.all(promises);
 		    } else {
 		        console.error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
-		        res.send("Error: no tuna catch found");
+		        res.send("Error: no tuna catch found 1");
 		        // throw new Error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
 		    }
 		}).then((results) => {
@@ -514,7 +564,7 @@ return{
 		        res.json(tx_id.getTransactionID())
 		    } else {
 		        console.error('Failed to order the transaction. Error code: ' + response.status);
-		        res.send("Error: no tuna catch found");
+		        res.send("Error: no tuna catch found 2");
 		    }
 
 		    if(results && results[1] && results[1].event_status === 'VALID') {
@@ -525,7 +575,7 @@ return{
 		    }
 		}).catch((err) => {
 		    console.error('Failed to invoke successfully :: ' + err);
-		    res.send("Error: no tuna catch found");
+		    res.send("Error: no tuna catch found or you are not the holder");
 		});
 
 	}

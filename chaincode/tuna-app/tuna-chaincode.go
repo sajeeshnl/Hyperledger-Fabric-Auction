@@ -80,7 +80,7 @@ It takes one argument -- the key for the tuna in question
  */
 func (s *SmartContract) queryTuna(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 1 {
+	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 

@@ -22,7 +22,6 @@ var fabric_ca_client = null;
 var admin_user = null;
 var member_user = null;
 var store_path = path.join(os.homedir(), '.hfc-key-store');
-console.log(' Store path:'+store_path);
 
 // create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
 Fabric_Client.newDefaultKeyValueStore({ path: store_path
@@ -46,7 +45,6 @@ Fabric_Client.newDefaultKeyValueStore({ path: store_path
     return fabric_client.getUserContext('admin', true);
 }).then((user_from_store) => {
     if (user_from_store && user_from_store.isEnrolled()) {
-        console.log('Successfully loaded admin from persistence');
         admin_user = user_from_store;
         return null;
     } else {
@@ -55,7 +53,6 @@ Fabric_Client.newDefaultKeyValueStore({ path: store_path
           enrollmentID: 'admin',
           enrollmentSecret: 'adminpw'
         }).then((enrollment) => {
-          console.log('Successfully enrolled admin user "admin"');
           return fabric_client.createUser(
               {username: 'admin',
                   mspid: 'Org1MSP',

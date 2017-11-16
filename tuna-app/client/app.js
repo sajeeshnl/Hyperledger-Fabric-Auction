@@ -5,7 +5,7 @@ var application = angular.module('application', ['ngRoute']);
 application.config(function($routeProvider) {
 	$routeProvider
 		.when('/assets', {
-			templateUrl: 'userView.html',
+			templateUrl: 'assets.html',
 			controller: 'assetController'
 		})
     .when('/login',{

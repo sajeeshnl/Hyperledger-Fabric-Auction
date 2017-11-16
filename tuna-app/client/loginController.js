@@ -1,15 +1,17 @@
-application.controller('loginController', function($scope, $http, $location) {
+application.controller('loginController', function($scope, $http, $location, $rootScope, $window) {
   $scope.form = {};
   $scope.loginUser = function() {
-    console.log("gfhgfh:"+$scope.form.username);
     var user = $scope.form.username;
     $http.get('/signup_user/'+user)
-    .success(function() {
-      console.log("success");
+    .success(function(data) {
+    if(data && data !== 'empty user') {
+      var result = data.filter((x)=>x.Record.holder === user);
+      localStorage.setItem("privateData", JSON.stringify(result));
+      localStorage.setItem("loggedInUser", user);
+    }
     $location.path("/assets");
     })
     .error(function(data) {
-      console.log("error");
     $location.path("/login");
     });
   };

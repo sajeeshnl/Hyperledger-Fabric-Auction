@@ -11,13 +11,10 @@ module.exports = function(app){
   app.get('/signup_user/:user', function(req, res){
     tuna.signup_user(req, res)
     .then(function() {
-      console.log("route succes");
-      // console.log(res.redirect('/assets'));
-      res.send('success');
+      res.send('empty user');
 
     })
     .catch(function (err) {
-      console.log("route errore");
       res.send(err)
     });
   });
